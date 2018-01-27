@@ -7,6 +7,8 @@ import (
 	"os"
 )
 
+const headline = "Titoli:"
+
 func parseRss(url string) *rss.Channel {
 	channel, err := rss.Read(url)
 	if err != nil {
@@ -16,21 +18,32 @@ func parseRss(url string) *rss.Channel {
 	return channel
 }
 
+func print_title() {
+	bg := termbox.AttrBold | termbox.ColorRed
+	for i := 0; i < len(headline); i++ {
+		fg := termbox.AttrBold | termbox.ColorWhite
+		termbox.SetCell(i+1, 0, rune(headline[i]), fg, bg)
+	}
+}
+
+func draw_all() {
+	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+
+	print_title()
+
+	termbox.Flush()
+}
+
 func main() {
-	term_err := termbox.Init()
-	if term_err != nil {
-		panic(term_err)
+	err := termbox.Init()
+	if err != nil {
+		panic(err)
 	}
 	defer termbox.Close()
 
-	channel := parseRss("http://www.ansa.it/sito/ansait_rss.xml")
-	//fmt.Println(channel.Title)
-	fmt.Println("Titoli:")
+	//channel := parseRss("http://www.ansa.it/sito/ansait_rss.xml")
 
-	for _, item := range channel.Item {
-		fmt.Println(item.Title)
-	}
-
+	draw_all()
 loop:
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
@@ -39,6 +52,12 @@ loop:
 			case termbox.KeyEsc:
 				break loop
 			}
+		case termbox.EventResize:
+			draw_all()
 		}
 	}
+	//	fmt.Println(channel.Title)
+	//	for _, item := range channel.Item {
+	//		fmt.Println(item.Title)
+	//	}
 }
