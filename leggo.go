@@ -29,12 +29,13 @@ func print_title() {
 }
 
 func print_news() {
-	bg := termbox.AttrBold | termbox.ColorGreen
+	bg := termbox.AttrBold
 	y := 2
 	for _, item := range channel.Item {
-		for i := 0; i < len(item.Title); i++ {
-			fg := termbox.AttrBold | termbox.ColorWhite
-			termbox.SetCell(i+1, y, rune(item.Title[i]), fg, bg)
+		runes := []rune(item.Title)
+		for i := 0; i < len(runes); i++ {
+			fg := termbox.AttrBold | termbox.ColorGreen
+			termbox.SetCell(i+1, y, runes[i], fg, bg)
 		}
 		y++
 	}
