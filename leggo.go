@@ -4,7 +4,17 @@ import (
 	"fmt"
 	"github.com/nsf/termbox-go"
 	"github.com/ungerik/go-rss"
+	"os"
 )
+
+func parseRss(url string) *rss.Channel {
+	channel, err := rss.Read(url)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return channel
+}
 
 func main() {
 	term_err := termbox.Init()
@@ -13,11 +23,7 @@ func main() {
 	}
 	defer termbox.Close()
 
-	channel, err := rss.Read("http://www.ansa.it/sito/ansait_rss.xml")
-	if err != nil {
-		fmt.Println(err)
-	}
-
+	channel := parseRss("http://www.ansa.it/sito/ansait_rss.xml")
 	//fmt.Println(channel.Title)
 	fmt.Println("Titoli:")
 
