@@ -7,7 +7,13 @@ import (
 	"os"
 )
 
-const headline = "Titoli:"
+type configT struct {
+	startLine int
+	numRows   int
+	headline  string
+}
+
+var cfg configT
 
 var channel *rss.Channel
 var curRow int
@@ -21,26 +27,24 @@ func parseRss(url string) *rss.Channel {
 	return c
 }
 
-func printTitle() {
+func printTitle(title string) {
+	// TODO: convertire titolo in []rune
 	bg := termbox.AttrBold | termbox.ColorRed
-	for i := 0; i < len(headline); i++ {
+	for i := 0; i < len(title); i++ {
 		fg := termbox.AttrBold | termbox.ColorWhite
-		termbox.SetCell(i+1, 0, rune(headline[i]), fg, bg)
+		termbox.SetCell(i+1, 0, rune(title[i]), fg, bg)
 	}
 }
 
 func rowIncrement() {
-	// TODO: make starting line a const (remove magic number)
-	numRows := len(channel.Item) + 2
-	if curRow < numRows {
+	if curRow < cfg.numRows {
 		curRow++
 	}
 	drawAll()
 }
 
 func rowDecrement() {
-	// TODO: make starting line a const (remove magic number)
-	if curRow > 2 {
+	if curRow > cfg.startLine {
 		curRow--
 	}
 	drawAll()
@@ -48,7 +52,7 @@ func rowDecrement() {
 
 func printNews() {
 	bg := termbox.ColorDefault
-	y := 2
+	y := cfg.startLine
 	for _, item := range channel.Item {
 		runes := []rune(item.Title)
 		for i := 0; i < len(runes); i++ {
@@ -67,7 +71,7 @@ func printNews() {
 func drawAll() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 
-	printTitle()
+	printTitle(cfg.headline)
 	printNews()
 
 	termbox.Flush()
@@ -81,8 +85,13 @@ func main() {
 	defer termbox.Close()
 
 	channel = parseRss("http://www.ansa.it/sito/ansait_rss.xml")
-	curRow = 2
 
+	// init cfg
+	cfg.headline = "Titoli:"
+	cfg.startLine = 2
+	cfg.numRows = len(channel.Item) + cfg.startLine
+
+	curRow = cfg.startLine
 	drawAll()
 loop:
 	for {
