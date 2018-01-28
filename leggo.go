@@ -50,9 +50,16 @@ func rowDecrement() {
 	drawAll()
 }
 
+func showArticle() {
+	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	printTitle(channel.Item[curRow-cfg.startLine].Title)
+	termbox.Flush()
+}
+
 func printNews() {
 	bg := termbox.ColorDefault
 	y := cfg.startLine
+	// TODO: use method to generate output string from item.Title
 	for _, item := range channel.Item {
 		runes := []rune(item.Title)
 		for i := 0; i < len(runes); i++ {
@@ -104,6 +111,10 @@ loop:
 				rowIncrement()
 			case termbox.KeyArrowUp:
 				rowDecrement()
+			case termbox.KeyArrowRight:
+				showArticle()
+			case termbox.KeyArrowLeft:
+				drawAll()
 			}
 		case termbox.EventResize:
 			drawAll()
