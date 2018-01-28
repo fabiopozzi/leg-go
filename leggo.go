@@ -10,6 +10,7 @@ import (
 const headline = "Titoli:"
 
 var channel *rss.Channel
+var curRow int
 
 func parseRss(url string) *rss.Channel {
 	c, err := rss.Read(url)
@@ -28,12 +29,34 @@ func printTitle() {
 	}
 }
 
+func rowIncrement() {
+	// TODO: make starting line a const (remove magic number)
+	numRows := len(channel.Item) + 2
+	if curRow < numRows {
+		curRow++
+	}
+	drawAll()
+}
+
+func rowDecrement() {
+	// TODO: make starting line a const (remove magic number)
+	if curRow > 2 {
+		curRow--
+	}
+	drawAll()
+}
+
 func printNews() {
-	bg := termbox.AttrBold
+	bg := termbox.ColorDefault
 	y := 2
 	for _, item := range channel.Item {
 		runes := []rune(item.Title)
 		for i := 0; i < len(runes); i++ {
+			if y == curRow {
+				bg = termbox.ColorRed | termbox.AttrBold
+			} else {
+				bg = termbox.AttrBold
+			}
 			fg := termbox.AttrBold | termbox.ColorGreen
 			termbox.SetCell(i+1, y, runes[i], fg, bg)
 		}
@@ -58,8 +81,9 @@ func main() {
 	defer termbox.Close()
 
 	channel = parseRss("http://www.ansa.it/sito/ansait_rss.xml")
+	curRow = 2
 
-	draw_all()
+	drawAll()
 loop:
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
@@ -67,6 +91,10 @@ loop:
 			switch ev.Key {
 			case termbox.KeyEsc:
 				break loop
+			case termbox.KeyArrowDown:
+				rowIncrement()
+			case termbox.KeyArrowUp:
+				rowDecrement()
 			}
 		case termbox.EventResize:
 			drawAll()
