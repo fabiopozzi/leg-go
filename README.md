@@ -1,2 +1,2 @@
-# leg-go
-A toy news reader in Go
+# Leggo
+A toy newsreader in Go.
