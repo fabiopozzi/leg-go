@@ -20,7 +20,7 @@ func parseRss(url string) *rss.Channel {
 	return c
 }
 
-func print_title() {
+func printTitle() {
 	bg := termbox.AttrBold | termbox.ColorRed
 	for i := 0; i < len(headline); i++ {
 		fg := termbox.AttrBold | termbox.ColorWhite
@@ -28,7 +28,7 @@ func print_title() {
 	}
 }
 
-func print_news() {
+func printNews() {
 	bg := termbox.AttrBold
 	y := 2
 	for _, item := range channel.Item {
@@ -41,11 +41,11 @@ func print_news() {
 	}
 }
 
-func draw_all() {
+func drawAll() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 
-	print_title()
-	print_news()
+	printTitle()
+	printNews()
 
 	termbox.Flush()
 }
@@ -69,7 +69,7 @@ loop:
 				break loop
 			}
 		case termbox.EventResize:
-			draw_all()
+			drawAll()
 		}
 	}
 }
