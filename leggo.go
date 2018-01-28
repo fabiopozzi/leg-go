@@ -28,11 +28,11 @@ func parseRss(url string) *rss.Channel {
 }
 
 func printTitle(title string) {
-	// TODO: convertire titolo in []rune
+	runes := []rune(title)
 	bg := termbox.AttrBold | termbox.ColorRed
-	for i := 0; i < len(title); i++ {
+	for i := 0; i < len(runes); i++ {
 		fg := termbox.AttrBold | termbox.ColorWhite
-		termbox.SetCell(i+1, 0, rune(title[i]), fg, bg)
+		termbox.SetCell(i+1, 0, runes[i], fg, bg)
 	}
 }
 
