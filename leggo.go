@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/mmcdole/gofeed"
 	"github.com/nsf/termbox-go"
-	"github.com/ungerik/go-rss"
 	"os"
 )
 
@@ -15,16 +15,17 @@ type configT struct {
 
 var cfg configT
 
-var channel *rss.Channel
+var feed *gofeed.Feed
 var curRow int
 
-func parseRss(url string) *rss.Channel {
-	c, err := rss.Read(url)
+func parseRss(url string) *gofeed.Feed {
+	fp := gofeed.NewParser()
+	feed, err := fp.ParseURL(url)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	return c
+	return feed
 }
 
 func printTitle(title string) {
@@ -51,8 +52,23 @@ func rowDecrement() {
 }
 
 func showArticle() {
+	w, _ := termbox.Size()
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-	printTitle(channel.Item[curRow-cfg.startLine].Title)
+	item := feed.Items[curRow-cfg.startLine]
+	printTitle(item.Title)
+	bg := termbox.AttrBold
+	fg := termbox.AttrBold | termbox.ColorGreen
+	y := cfg.startLine
+	runes := []rune(item.Description)
+	i := 0
+	for x := 0; x < len(runes); x++ {
+		if i == (w - 5) {
+			y++
+			i = 0
+		}
+		termbox.SetCell(i+1, y, runes[x], fg, bg)
+		i++
+	}
 	termbox.Flush()
 }
 
@@ -60,7 +76,7 @@ func printNews() {
 	bg := termbox.ColorDefault
 	y := cfg.startLine
 	// TODO: use method to generate output string from item.Title
-	for _, item := range channel.Item {
+	for _, item := range feed.Items {
 		runes := []rune(item.Title)
 		for i := 0; i < len(runes); i++ {
 			if y == curRow {
@@ -91,12 +107,12 @@ func main() {
 	}
 	defer termbox.Close()
 
-	channel = parseRss("http://www.ansa.it/sito/ansait_rss.xml")
+	feed = parseRss("http://www.ansa.it/sito/ansait_rss.xml")
 
 	// init cfg
 	cfg.headline = "Titoli:"
 	cfg.startLine = 2
-	cfg.numRows = len(channel.Item) + cfg.startLine
+	cfg.numRows = len(feed.Items) + cfg.startLine
 
 	curRow = cfg.startLine
 	drawAll()
