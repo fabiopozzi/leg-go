@@ -26,63 +26,21 @@ func parseRss(url string) *gofeed.Feed {
 	return feed
 }
 
-/*
-func printTitle(title string) {
-	runes := []rune(title)
-	bg := termbox.AttrBold | termbox.ColorRed
-	for i := 0; i < len(runes); i++ {
-		fg := termbox.AttrBold | termbox.ColorWhite
-		termbox.SetCell(i+1, 0, runes[i], fg, bg)
-	}
+// Center returns a new primitive which shows the provided primitive in its¬
+// center, given the provided primitive's size.¬
+func Center(width, height int, p tview.Primitive) tview.Primitive {
+	return tview.NewFlex().
+		AddItem(tview.NewBox(), 0, 1, false).
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(tview.NewBox(), 0, 1, false).
+			AddItem(p, height, 1, true).
+			AddItem(tview.NewBox(), 0, 1, false), width, 1, true).
+		AddItem(tview.NewBox(), 0, 1, false)
 }
-
-func rowIncrement() {
-	if curRow < cfg.numRows {
-		curRow++
-	}
-	drawAll()
-}
-
-func rowDecrement() {
-	if curRow > cfg.startLine {
-		curRow--
-	}
-	drawAll()
-}
-
-func showArticle() {
-	// TODO: refactor insieme a printNews per estrarre parte rendering.
-	w, _ := termbox.Size()
-	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-	item := feed.Items[curRow-cfg.startLine]
-	printTitle(item.Title)
-	bg := termbox.AttrBold
-	fg := termbox.AttrBold | termbox.ColorWhite
-	y := cfg.startLine
-	runes := []rune(item.Description)
-	i := 0
-	for x := 0; x < len(runes); x++ {
-		if i == (w - 5) {
-			y++
-			i = 0
-		}
-		termbox.SetCell(i+1, y, runes[x], fg, bg)
-		i++
-	}
-	termbox.Flush()
-}
-
-*/
 
 func RSS(nextSlide func()) (title string, content tview.Primitive) {
-	table := tview.NewTable().
-		SetFixed(1, 1)
-
 	list := tview.NewList()
-
-	showDescription := func() {
-		// TODO: mostrare il testo quando premi enter.
-	}
 
 	feed = parseRss("http://www.ansa.it/sito/ansait_rss.xml")
 
@@ -91,15 +49,26 @@ func RSS(nextSlide func()) (title string, content tview.Primitive) {
 	// add a list element for each feed title
 	shortcut := 'a'
 	for _, item := range feed.Items {
-		list.AddItem(item.Title, "", shortcut, showDescription)
+		list.AddItem(item.Title, "", shortcut, nil)
 		shortcut++
 	}
 
+	newsView := tview.NewTextView().
+		SetChangedFunc(func() {
+			app.Draw()
+		})
+
+	list.SetChangedFunc(func(idx int, maintxt string, secondTxt string, shortcut rune) {
+		newsView.Clear()
+		fmt.Fprintf(newsView, "\n\n\nDescrizione notizia\n\n")
+		fmt.Fprintf(newsView, feed.Items[idx].Description)
+	})
+
+	fmt.Fprintf(newsView, "\n\n\nDescrizione notizia")
+
 	return "RSS", tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(list, 10, 1, true).
-			AddItem(table, 0, 1, true), 0, 1, true)
+		AddItem(Center(130, 30, list), 0, 1, true).
+		AddItem(newsView, 60, 1, false)
 }
 
 func main() {
