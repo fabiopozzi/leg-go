@@ -26,25 +26,13 @@ func parseRss(url string) *gofeed.Feed {
 	return feed
 }
 
-// Center returns a new primitive which shows the provided primitive in its¬
-// center, given the provided primitive's size.¬
-func Center(width, height int, p tview.Primitive) tview.Primitive {
-	return tview.NewFlex().
-		AddItem(tview.NewBox(), 0, 1, false).
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(tview.NewBox(), 0, 1, false).
-			AddItem(p, height, 1, true).
-			AddItem(tview.NewBox(), 0, 1, false), width, 1, true).
-		AddItem(tview.NewBox(), 0, 1, false)
-}
-
 func RSS(nextSlide func()) (title string, content tview.Primitive) {
 	list := tview.NewList()
 
 	feed = parseRss("http://www.ansa.it/sito/ansait_rss.xml")
 
 	list.ShowSecondaryText(false)
+	list.SetBorder(true).SetTitle("Elenco notizie")
 
 	// add a list element for each feed title
 	shortcut := 'a'
@@ -57,18 +45,16 @@ func RSS(nextSlide func()) (title string, content tview.Primitive) {
 		SetChangedFunc(func() {
 			app.Draw()
 		})
+	newsView.SetBorder(true).SetTitle("Testo notizie")
 
 	list.SetChangedFunc(func(idx int, maintxt string, secondTxt string, shortcut rune) {
 		newsView.Clear()
-		fmt.Fprintf(newsView, "\n\n\nDescrizione notizia\n\n")
 		fmt.Fprintf(newsView, feed.Items[idx].Description)
 	})
 
-	fmt.Fprintf(newsView, "\n\n\nDescrizione notizia")
-
 	return "RSS", tview.NewFlex().
-		AddItem(Center(130, 30, list), 0, 1, true).
-		AddItem(newsView, 60, 1, false)
+		AddItem(list, 0, 1, true).
+		AddItem(newsView, 0, 1, false)
 }
 
 func main() {
